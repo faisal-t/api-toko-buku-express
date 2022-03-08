@@ -29,4 +29,27 @@ module.exports = {
             next(err);
         }
     },
+
+    signup: async (req, res, next) => {
+        try {
+            const { username, email, password, confirmPassword } = req.body;
+            if (password != confirmPassword) {
+                return res.status(403).json({ message: 'Password and Confirm Password Doesn`t macth' });
+            }
+            const checkEmail = await User.findOne({ where: { email: email } });
+            if (checkEmail) {
+                return res.status(403).json({ message: 'email registered' });
+            }
+            const user = await User.create({ username, email, password: bcrypt.hashSync(password,10), role: 'admin' });
+            delete user.dataValues.password;
+            res.status(201).json(
+                {
+                    message:'Success Signup',
+                    data: user,
+                }
+            );
+        } catch (err) {
+            next(err);
+        }
+    },
 }
